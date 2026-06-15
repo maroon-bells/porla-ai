@@ -1,12 +1,9 @@
 fastapi
 uvicorn
-ultralytics
+python-multipart
 openai
-opencv-python
-mediapipe
+ultralytics
+pillow
 numpy
 gspread
 oauth2client
-pillow
-python-multipart
-numpy
