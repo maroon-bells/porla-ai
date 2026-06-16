@@ -1,15 +1,15 @@
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 scope = [
-    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name(
+creds = Credentials.from_service_account_file(
     "uploads/porla-active-a5e4f521ac79.json",
-    scope
+    scopes=scope
 )
 
 client = gspread.authorize(creds)
