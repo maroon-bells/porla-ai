@@ -6,7 +6,9 @@ import tempfile
 
 from score import calculate_score
 from gpt_report import create_report
-from save_to_sheets import save_analysis
+
+# Google Sheets vaqtincha o'chirilgan
+save_analysis = None
 
 app = FastAPI()
 
@@ -32,7 +34,7 @@ async def analyze(file: UploadFile = File(...)):
         temp.write(await file.read())
         temp_path = temp.name
 
-    # ===== YOLO PREDICTION =====
+    # ===== YOLO prediction =====
     results = model.predict(
         source=temp_path,
         imgsz=1280,
@@ -53,20 +55,26 @@ async def analyze(file: UploadFile = File(...)):
 
         counts = dict(Counter(labels))
 
-    # ===== SKIN SCORE =====
+    # ===== Acne score =====
     score, severity = calculate_score(counts)
 
-    # ===== IF NO ACNE DETECTED =====
+    # ===== No acne detected =====
     if len(counts) == 0:
+
         report = {
             "overall_feedback": "Teringiz toza, akne aniqlanmadi.",
             "severity": "Clear Skin",
             "main_concerns": [],
-            "recommended_ingredients": ["Niacinamide", "Hyaluronic Acid"],
+            "recommended_ingredients": [
+                "Niacinamide",
+                "Hyaluronic Acid"
+            ],
             "ingredients_to_avoid": [],
             "morning_routine": [],
             "evening_routine": [],
-            "extra_tips": ["Yengil skincare routine davom ettiring"]
+            "extra_tips": [
+                "Yengil skincare routine davom ettiring"
+            ]
         }
 
         return {
@@ -76,17 +84,8 @@ async def analyze(file: UploadFile = File(...)):
             "report": report
         }
 
-    # ===== GPT REPORT =====
+    # ===== GPT report =====
     report = create_report(counts, severity)
-
-    # ===== SAVE TO GOOGLE SHEETS =====
-    save_analysis(
-        file.filename,
-        counts,
-        score,
-        severity,
-        report
-    )
 
     return {
         "counts": counts,
