@@ -377,7 +377,8 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
   // ── Backend URL — o'zingizning serveringiz ──
   // Local test uchun: "http://localhost:3001/api/skin-analyze"
   // Deploy qilgandan keyin: "https://your-server.com/api/skin-analyze"
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001/api/skin-analyze";
+  const BACKEND_URL  =
+  "https://porla-ai-production.up.railway.app/analyze";
 
   // Fallback mahsulot tavsiya xaritasi (Claude javob bermasa)
   const RECO_MAP = {
@@ -401,77 +402,50 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
     server_error:"⚙️ Server xatosi. Biroz kutib qayta urinib ko'ring.",
   };
 
-  async function analyze(b64, mt) {
-    setStatus("analyzing"); setScores(null); setRecos([]); setAiSummary(null);
-    try {
-      // ── Backend: Face++ tahlil + Claude tavsiya ──
-      const res = await fetch(BACKEND_URL, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ image_base64: b64, media_type: mt || "image/jpeg" }),
-      });
+  async function analyze(file) {
 
-      const json = await res.json();
+  setStatus("analyzing");
+  setScores(null);
+  setRecos([]);
+  setAiSummary(null);
+  setErrorMsg("");
 
-      // Xato tekshirish
-      if (!res.ok || json.error) {
-        const msg = ERROR_MSGS[json.error] || "Tahlil amalga oshmadi. Qayta urinib ko'ring.";
-        setStatus("error"); setErrorMsg(msg); return;
-      }
+  try {
 
-      const { scores: faceScores, recommendation } = json.data;
+    const formData = new FormData();
+    formData.append("file", file);
 
-      // Heatmap uchun ballar (Face++ dan)
-      const heatmapScores = {
-        pores:        faceScores.pores        ?? 0,
-        blackheads:   faceScores.blackheads   ?? 0,
-        wrinkles:     faceScores.wrinkles     ?? 0,
-        pigmentation: faceScores.pigmentation ?? 0,
-        redness:      faceScores.redness      ?? 0,
-        hydration:    faceScores.hydration    ?? 50,
-        acne:         faceScores.acne         ?? 0,
-        dark_circle:  faceScores.dark_circle  ?? 0,
-      };
+    const res = await fetch(BACKEND_URL, {
+      method: "POST",
+      body: formData
+    });
 
-      setScores(heatmapScores);
-      setStatus("done");
+    const json = await res.json();
 
-      if (recommendation) {
-        // ── Claude tavsiyasi mavjud ──
-        setAiSummary({
-          text: recommendation.summary,
-          concerns: recommendation.top_concerns || [],
-        });
-        const recoProds = (recommendation.recommendations || [])
-          .map(r => {
-            const p = products.find(pp => pp.id === r.product?.id || pp.id === r.id);
-            return p ? { ...p, _reason: r.reason } : null;
-          })
-          .filter(Boolean);
-        setRecos(recoProds.length ? recoProds : fallbackRecos(heatmapScores));
-      } else {
-        // ── Claude javob bermadi — fallback ──
-        setRecos(fallbackRecos(heatmapScores));
-      }
+    console.log(json);
 
-    } catch(err) {
-      console.error("Analyze error:", err);
-      // ── Backend ulanmagan bo'lsa — demo natija ──
-      const demo = {
-        pores:        Math.floor(Math.random()*40)+20,
-        blackheads:   Math.floor(Math.random()*35)+15,
-        wrinkles:     Math.floor(Math.random()*25)+10,
-        pigmentation: Math.floor(Math.random()*45)+15,
-        redness:      Math.floor(Math.random()*30)+10,
-        hydration:    Math.floor(Math.random()*40)+35,
-        acne:         Math.floor(Math.random()*30)+10,
-        dark_circle:  Math.floor(Math.random()*30)+10,
-      };
-      setScores(demo); setStatus("done");
-      setRecos(fallbackRecos(demo));
-      setErrorMsg("⚠️ Demo rejim — server ulanmagan. Haqiqiy natija uchun backend ishga tushiring.");
+    if (!res.ok) {
+      setStatus("error");
+      setErrorMsg("Tahlil amalga oshmadi.");
+      return;
     }
+
+    setStatus("done");
+
+    setAiSummary({
+      text: json.report.overall_feedback,
+      concerns: json.report.main_concerns || []
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    setStatus("error");
+    setErrorMsg("Server bilan bog'lanishda xatolik.");
+
   }
+}
 
   // Claude javob bermaganda ishlatiladigan oddiy tavsiya
   function fallbackRecos(s) {
@@ -485,7 +459,7 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
     const reader=new FileReader();
     reader.onload=e=>{
       setPreview(e.target.result);
-      analyze(e.target.result.split(",")[1], e.target.result.split(";")[0].split(":")[1]);
+      analyze(file);
     };
     reader.readAsDataURL(file);
   }
