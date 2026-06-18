@@ -404,6 +404,8 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
 
   async function analyze(file) {
 
+  alert("ANALYZE BOSHLANDI");
+
   setStatus("analyzing");
   setScores(null);
   setRecos([]);
@@ -420,9 +422,15 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
       body: formData
     });
 
+    alert("FETCH TUGADI");
+
     const json = await res.json();
 
+    alert("JSON OLINDI");
+
     console.log(json);
+
+    alert(JSON.stringify(json));
 
     if (!res.ok) {
       setStatus("error");
@@ -439,12 +447,14 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
 
   } catch (err) {
 
-    console.error(err);
+  console.error(err);
 
-    setStatus("error");
-    setErrorMsg("Server bilan bog'lanishda xatolik.");
+  alert("XATO: " + err.message);
 
-  }
+  setStatus("error");
+  setErrorMsg("Server bilan bog'lanishda xatolik.");
+
+}
 }
 
   // Claude javob bermaganda ishlatiladigan oddiy tavsiya
