@@ -377,7 +377,7 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
   // ── Backend URL — o'zingizning serveringiz ──
   // Local test uchun: "http://localhost:3001/api/skin-analyze"
   // Deploy qilgandan keyin: "https://your-server.com/api/skin-analyze"
-  const BACKEND_URL  =
+  const BACKEND_URL =
   "https://porla-ai-production.up.railway.app/analyze";
 
   // Fallback mahsulot tavsiya xaritasi (Claude javob bermasa)
@@ -406,56 +406,39 @@ function AiPage({ onAddToCart, products = PRODUCTS }) {
 
   alert("ANALYZE BOSHLANDI");
 
-  setStatus("analyzing");
-  setScores(null);
-  setRecos([]);
-  setAiSummary(null);
-  setErrorMsg("");
-
   try {
 
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(BACKEND_URL, {
-      method: "POST",
-      body: formData
-    });
+    alert(file.name);
+
+    const res = await fetch(
+      "https://porla-ai-production.up.railway.app/analyze",
+      {
+        method: "POST",
+        body: formData
+      }
+    );
 
     alert("FETCH TUGADI");
 
-    const json = await res.json();
+    const text = await res.text();
 
-    alert("JSON OLINDI");
+    alert("TEXT OLINDI");
 
-    console.log(json);
-
-    alert(JSON.stringify(json));
-
-    if (!res.ok) {
-      setStatus("error");
-      setErrorMsg("Tahlil amalga oshmadi.");
-      return;
-    }
-
-    setStatus("done");
-
-    setAiSummary({
-      text: json.report.overall_feedback,
-      concerns: json.report.main_concerns || []
-    });
+    alert(text);
 
   } catch (err) {
 
-  console.error(err);
+    alert("XATO");
 
-  alert("XATO: " + err.message);
+    alert(err.message);
 
-  setStatus("error");
-  setErrorMsg("Server bilan bog'lanishda xatolik.");
+  }
 
 }
-}
+
 
   // Claude javob bermaganda ishlatiladigan oddiy tavsiya
   function fallbackRecos(s) {
