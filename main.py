@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 from collections import Counter
 from pathlib import Path
@@ -7,10 +8,21 @@ import tempfile
 from score import calculate_score
 from gpt_report import create_report
 
-# Google Sheets vaqtincha o'chirilgan
-save_analysis = None
+try:
+    from save_to_sheets import save_analysis
+except:
+    save_analysis = None
 
 app = FastAPI()
+print("========== CORS LOADED ==========")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ===== Load YOLO model =====
 BASE_DIR = Path(__file__).resolve().parent
