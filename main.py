@@ -32,7 +32,9 @@ print("MODEL PATH:", MODEL_PATH)
 
 model = YOLO(str(MODEL_PATH))
 
-
+@app.get("/test123")
+def test123():
+    return {"hello": "Mohinur"}
 @app.get("/")
 def home():
     return {"message": "Porla AI Backend Running 🚀"}
