@@ -35,10 +35,14 @@ model = YOLO(str(MODEL_PATH))
 @app.get("/test123")
 def test123():
     return {"hello": "Mohinur"}
+
 @app.get("/")
 def home():
     return {"message": "Porla AI Backend Running 🚀"}
 
+@app.options("/analyze")
+async def options_analyze():
+    return {"ok": True}
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
