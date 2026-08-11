@@ -49,7 +49,7 @@ The goal is to transform skincare from guesswork into data-driven personalizatio
                    │
                    ▼
         ┌─────────────────────┐
-        │    GPT Analysis     │
+        │    PORLA Analysis     │
         │ Personalized Report │
         └──────────┬──────────┘
                    │
